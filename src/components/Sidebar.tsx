@@ -20,6 +20,13 @@ export default function Sidebar({ treeData, isAdmin, onSelectPost, onRefresh, on
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newCatName.trim() })
       });
+      
+      if (res.status === 401) {
+        alert("Session expired. Please log in again.");
+        window.location.reload();
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         setNewCatName("");
@@ -36,6 +43,11 @@ export default function Sidebar({ treeData, isAdmin, onSelectPost, onRefresh, on
   const deleteCat = async (id: number) => {
     if (!confirm("Delete category?")) return;
     const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
+    if (res.status === 401) {
+      alert("Session expired. Please log in again.");
+      window.location.reload();
+      return;
+    }
     if (!res.ok) {
       const data = await res.json();
       alert(data.message);

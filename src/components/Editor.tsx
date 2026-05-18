@@ -75,14 +75,27 @@ export default function Editor({ postId, categoryId, onSaved, onCancel }: any) {
     
     // In case user deletes some images from editor, we might still associate them but cleanup task handles it.
     
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category_id: categoryId, title, content, pending_images: pendingImages })
-    });
-    const data = await res.json();
-    if (data.success) {
-      onSaved(postId || data.id);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category_id: categoryId, title, content, pending_images: pendingImages })
+      });
+      
+      if (res.status === 401) {
+        alert("Session expired. Please log in again.");
+        window.location.reload();
+        return;
+      }
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        onSaved(postId || data.id);
+      } else {
+        alert("Failed to save post: " + (data.message || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Network error occurred.");
     }
   };
 

@@ -131,7 +131,8 @@ function requireAdmin(req: express.Request, res: express.Response, next: express
   }
 
   // Check 60 mins inactivity
-  const lastActivity = new Date(session.last_activity).getTime();
+  const lastActivityStr = session.last_activity.replace(' ', 'T') + 'Z';
+  const lastActivity = new Date(lastActivityStr).getTime();
   const now = Date.now();
   if (now - lastActivity > 60 * 60 * 1000) {
     db.prepare("DELETE FROM session_store WHERE session_id = ?").run(sessionId);

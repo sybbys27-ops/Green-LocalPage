@@ -19,6 +19,11 @@ export default function PostView({ postId, isAdmin, onEdit, onDeleted }: any) {
   const deletePost = async () => {
     if (!confirm("Delete this post? This is irreversible.")) return;
     const res = await fetch(`/api/posts/${postId}`, { method: "DELETE" });
+    if (res.status === 401) {
+      alert("Session expired. Please log in again.");
+      window.location.reload();
+      return;
+    }
     if (res.ok) onDeleted();
   };
 
