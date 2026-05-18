@@ -14,14 +14,23 @@ export default function Sidebar({ treeData, isAdmin, onSelectPost, onRefresh, on
 
   const createCat = async () => {
     if (!newCatName.trim()) return;
-    await fetch("/api/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newCatName.trim() })
-    });
-    setNewCatName("");
-    setIsCreatingCat(false);
-    onRefresh();
+    try {
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCatName.trim() })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNewCatName("");
+        setIsCreatingCat(false);
+        onRefresh();
+      } else {
+        alert("카테고리 생성 실패: " + (data.message || "서버 오류"));
+      }
+    } catch (err) {
+      alert("네트워크 오류가 발생했습니다.");
+    }
   };
 
   const deleteCat = async (id: number) => {
@@ -47,7 +56,11 @@ export default function Sidebar({ treeData, isAdmin, onSelectPost, onRefresh, on
                 placeholder="Category name..."
                 value={newCatName}
                 onChange={e => setNewCatName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && createCat()}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                    createCat();
+                  }
+                }}
               />
               <button onClick={() => setIsCreatingCat(false)} className="text-gray-500 hover:text-white">✕</button>
             </div>

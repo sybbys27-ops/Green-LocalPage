@@ -6,11 +6,7 @@ import crypto from "crypto";
 import multer from "multer";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
@@ -23,11 +19,11 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
 // Initialize SQLite DB (Using file DB in the current directory)
-const db = new Database("app.db");
+const db = new Database(path.join(process.cwd(), "app.db"));
 db.pragma("foreign_keys = ON");
 
 // Setup uploads folder
-const UPLOADS_DIR = path.join(__dirname, "uploads");
+const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
