@@ -39,12 +39,69 @@ export default function PostView({ postId, isAdmin, onEdit, onDeleted }: any) {
     }
   };
 
+  const processContent = (html: string) => {
+    if (!html) return "";
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const links = Array.from(doc.querySelectorAll("a"));
+    
+    links.forEach(a => {
+      const href = a.getAttribute("href");
+      if (href) {
+        const match = href.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+        if (match && match[1]) {
+          const wrapper = doc.createElement("div");
+          wrapper.className = "my-8 rounded-lg overflow-hidden shadow-xl shadow-black/40 border border-[rgba(255,255,255,0.05)] aspect-video w-full";
+          
+          const iframe = doc.createElement("iframe");
+          iframe.src = `https://www.youtube.com/embed/${match[1]}`;
+          iframe.className = "w-full h-full border-0";
+          iframe.allowFullscreen = true;
+          iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+          
+          wrapper.appendChild(iframe);
+          a.replaceWith(wrapper);
+        }
+      }
+    });
+    
+    // Replace raw text nodes that might be youtube links (Quill might not always anchor them if user just pastes and saves)
+    const walk = document.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
+    let node;
+    const textNodes = [];
+    while ((node = walk.nextNode())) {
+      textNodes.push(node);
+    }
+    
+    const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+    
+    textNodes.forEach(textNode => {
+      if (textNode.parentElement && textNode.parentElement.tagName !== 'A' && textNode.nodeValue) {
+        const match = textNode.nodeValue.match(ytRegex);
+        if (match && match[1]) {
+          const wrapper = doc.createElement("div");
+          wrapper.className = "my-8 rounded-lg overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-[rgba(255,255,255,0.05)] aspect-video w-full";
+          
+          const iframe = doc.createElement("iframe");
+          iframe.src = `https://www.youtube.com/embed/${match[1]}`;
+          iframe.className = "w-full h-full border-0";
+          iframe.allowFullscreen = true;
+          iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+          
+          wrapper.appendChild(iframe);
+          textNode.replaceWith(wrapper);
+        }
+      }
+    });
+
+    return doc.body.innerHTML;
+  };
+
   if (!post) return <div className="p-10 text-center text-slate-500">Loading document...</div>;
 
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="p-8 max-w-4xl mx-auto py-12 relative"
+      className="p-8 w-full max-w-5xl mx-auto py-12 relative"
       key={postId}
     >
       <div className="absolute top-4 right-4 flex items-center gap-3">
@@ -75,7 +132,7 @@ export default function PostView({ postId, isAdmin, onEdit, onDeleted }: any) {
 
       <div 
         className="editor-content prose prose-invert mx-auto w-full text-gray-300 leading-relaxed text-base font-sans"
-        dangerouslySetInnerHTML={{ __html: post.content }}
+        dangerouslySetInnerHTML={{ __html: processContent(post.content) }}
       />
 
       <div className="mt-20 pt-10 border-t border-[rgba(255,255,255,0.08)] flex justify-center">

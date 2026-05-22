@@ -8,6 +8,7 @@ export default function Editor({ postId, categoryId, onSaved, onCancel }: any) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [pendingImages, setPendingImages] = useState<number[]>([]);
+  const [editCategoryId, setEditCategoryId] = useState<number | null>(null);
   const quillRef = useRef<any>(null);
 
   useEffect(() => {
@@ -18,10 +19,16 @@ export default function Editor({ postId, categoryId, onSaved, onCancel }: any) {
           if (d.success) {
             setTitle(d.data.title);
             setContent(d.data.content);
+            setEditCategoryId(d.data.category_id);
           }
         });
+    } else {
+      setTitle("");
+      setContent("");
+      setEditCategoryId(categoryId);
+      setPendingImages([]);
     }
-  }, [postId]);
+  }, [postId, categoryId]);
 
   const imageHandler = () => {
     const input = document.createElement("input");
@@ -79,7 +86,7 @@ export default function Editor({ postId, categoryId, onSaved, onCancel }: any) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category_id: categoryId, title, content, pending_images: pendingImages })
+        body: JSON.stringify({ category_id: editCategoryId, title, content, pending_images: pendingImages })
       });
       
       if (res.status === 401) {
@@ -102,7 +109,7 @@ export default function Editor({ postId, categoryId, onSaved, onCancel }: any) {
   return (
     <motion.div 
       initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-      className="p-8 max-w-4xl mx-auto h-full flex flex-col pt-12"
+      className="p-8 w-full max-w-5xl mx-auto h-full flex flex-col pt-12"
     >
       <div className="flex items-center justify-between mb-8">
         <div>

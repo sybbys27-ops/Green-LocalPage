@@ -57,7 +57,7 @@ export default function Sidebar({ treeData, isAdmin, onSelectPost, onRefresh, on
   };
 
   return (
-    <nav className="flex flex-col gap-1 w-full pb-10">
+    <nav className="flex flex-col gap-0 w-full pb-10">
       {isAdmin && (
         <div className="mb-4 px-6">
           {isCreatingCat ? (
@@ -89,7 +89,7 @@ export default function Sidebar({ treeData, isAdmin, onSelectPost, onRefresh, on
 
       {treeData.map((cat: any) => (
         <div key={cat.id} className="flex flex-col w-full">
-          <div className="group flex items-center justify-between px-6 py-3 hover:bg-[rgba(255,255,255,0.03)] cursor-pointer transition select-none">
+          <div className="group flex items-center justify-between px-6 py-2 hover:bg-[rgba(255,255,255,0.03)] cursor-pointer transition select-none">
             <div className="flex items-center gap-3 flex-1" onClick={() => toggleCat(cat.id)}>
               <span className="opacity-50">
                 {expanded[cat.id] ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}
@@ -122,12 +122,12 @@ export default function Sidebar({ treeData, isAdmin, onSelectPost, onRefresh, on
                       key={post.id}
                       onClick={() => onSelectPost(post.id)}
                       className={cn(
-                        "sidebar-item px-10 py-2.5 flex items-center gap-3 justify-start relative",
+                        "sidebar-item px-10 py-1.5 flex items-center gap-2 justify-start relative",
                         isActive ? "active-nav" : "opacity-60"
                       )}
                     >
                       <FileText size={14} className={isActive ? "text-emerald-400" : "text-gray-400"} />
-                      <span className={cn("truncate text-sm", isActive ? "text-emerald-500 font-medium" : "text-gray-300")}>{post.title}</span>
+                      <span className={cn("truncate text-xs", isActive ? "text-emerald-500 font-medium" : "text-gray-300")}>{post.title}</span>
                     </div>
                   )})
                 )}
