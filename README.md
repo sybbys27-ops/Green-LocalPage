@@ -15,8 +15,24 @@ View your app in AI Studio: https://ai.studio/apps/78f5a4aa-4340-43cc-af77-5faed
 **Prerequisites:**  Node.js
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Green-LocalPage
+
+React + Express + SQLite 기반 개인 웹페이지/CMS
+
+Frontend
+- React
+- Vite
+- Tailwind
+
+Backend
+- Express
+- SQLite
+- better-sqlite3
+
+Features
+- Admin login
+- Category/Post management
+- Rich text editor
+- Image upload
+- Visitor statistics
+- Likes
