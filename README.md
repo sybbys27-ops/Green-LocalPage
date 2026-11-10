@@ -36,3 +36,31 @@ Features
 - Image upload
 - Visitor statistics
 - Likes
+
+
+## Railway + Volume deployment
+
+This branch keeps SQLite and uploaded images on a Railway persistent Volume.
+
+### Runtime storage
+
+- Local development: `app.db` and `uploads/` remain under the project directory.
+- Railway: when `RAILWAY_ENVIRONMENT` is present, runtime data is stored under `/data`.
+- SQLite database: `/data/app.db`
+- Uploaded images: `/data/uploads/`
+
+### Railway setup
+
+1. Deploy this repository using branch `feat/railway-volume`.
+2. Add a Railway Volume to the Green-LocalPage service.
+3. Set the Volume mount path to `/data`.
+4. Keep the service at one replica because this deployment uses one SQLite database file.
+5. Set Healthcheck Path to `/health`.
+6. Railway can use the existing package scripts:
+   - Build: `npm run build`
+   - Start: `npm start`
+7. Generate a public domain after deployment.
+
+The server uses Railway's `PORT` automatically. The `/health` endpoint checks that both Express and SQLite are available.
+
+Optional: set `DATA_DIR` explicitly if a different persistent mount path is desired.
