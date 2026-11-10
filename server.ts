@@ -373,7 +373,9 @@ app.get("/health", (req, res) => {
 });
 
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+  const isProduction = process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT;
+
+  if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -388,7 +390,9 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);\n    console.log(`SQLite database: ${DB_PATH}`);\n    console.log(`Uploads directory: ${UPLOADS_DIR}`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`SQLite database: ${DB_PATH}`);
+    console.log(`Uploads directory: ${UPLOADS_DIR}`);
   });
 }
 
