@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local SQLite/runtime data
+app.db
+app.db-*
+uploads/
