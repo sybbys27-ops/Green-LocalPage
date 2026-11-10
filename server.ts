@@ -9,7 +9,13 @@ import { v4 as uuidv4 } from "uuid";
 import { createServer as createViteServer } from "vite";
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+
+// Railway Volume: use /data in Railway, project root during local development.
+const DATA_DIR = process.env.DATA_DIR || (process.env.RAILWAY_ENVIRONMENT ? "/data" : process.cwd());
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
 
 // Trust proxy to get correct IP for visit logs
 app.set("trust proxy", true);
@@ -18,12 +24,16 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
-// Initialize SQLite DB (Using file DB in the current directory)
-const db = new Database(path.join(process.cwd(), "app.db"));
+// Initialize SQLite DB on persistent storage.
+// Railway: mount a Volume at /data. Local development continues to use the project root.
+const DB_PATH = path.join(DATA_DIR, "app.db");
+const db = new Database(DB_PATH);
 db.pragma("foreign_keys = ON");
+db.pragma("journal_mode = WAL");
+db.pragma("busy_timeout = 5000");
 
-// Setup uploads folder
-const UPLOADS_DIR = path.join(process.cwd(), "uploads");
+// Setup persistent uploads folder
+const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -347,6 +357,21 @@ api.post("/cleanup-images", requireAdmin, (req, res) => {
 
 app.use("/api", api);
 
+// Railway healthcheck: verifies that the Express process and SQLite database are usable.
+app.get("/health", (req, res) => {
+  try {
+    db.prepare("SELECT 1").get();
+    res.json({
+      status: "ok",
+      database: "connected",
+      storage: DATA_DIR,
+    });
+  } catch (error) {
+    console.error("Health check failed:", error);
+    res.status(500).json({ status: "error", database: "disconnected" });
+  }
+});
+
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -363,7 +388,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);\n    console.log(`SQLite database: ${DB_PATH}`);\n    console.log(`Uploads directory: ${UPLOADS_DIR}`);
   });
 }
 
